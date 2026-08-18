@@ -40,9 +40,9 @@ class TestSPMCountdown(unittest.TestCase):
 
     def test_image_path_resolution(self):
         base_dir = Path(__file__).resolve().parent
-        img_97 = get_image_path(97, base_dir)
-        self.assertTrue(img_97.exists(), f"Image 97.png not found at {img_97}")
-        self.assertEqual(img_97.name, "97.png")
+        img_96 = get_image_path(96, base_dir)
+        self.assertTrue(img_96.exists(), f"Image 96.png not found at {img_96}")
+        self.assertEqual(img_96.name, "96.png")
 
 
 if __name__ == "__main__":
