@@ -73,7 +73,7 @@ Under your GitHub repository **Settings** > **Secrets and variables** > **Action
 
 ## Automation via External Cron (00:00 Daily UTC+8)
 
-To trigger the GitHub Action every day at 00:00 UTC+8 (Malaysia Time) using a free web cron service (e.g., [cron-job.org](https://cron-job.org/)):
+To trigger the GitHub Action every day at 00:00 UTC+8 (Malaysia Time) using a free web cron service (e.g., [cron-job.org](https://cron-job.org/)) because GitHub Actions automation is not reliable:
 
 1. Create a GitHub Personal Access Token (PAT) with `repo` / `workflow` permissions at [GitHub Settings > Personal Access Tokens](https://github.com/settings/tokens).
 2. Create a new cron job in [cron-job.org](https://cron-job.org/):
