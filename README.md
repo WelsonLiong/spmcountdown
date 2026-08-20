@@ -1,16 +1,6 @@
 # SPM Countdown Auto-Poster
 
-Automated daily countdown bot for the **Sijil Pelajaran Malaysia (SPM)** examinations. Every day at **00:00 (Malaysia Time / UTC+8)**, this bot posts the countdown image (`images/{N}.png`) along with the target captions to **Meta Threads** and **Twitter (X)**.
-
----
-
-## Features
-
-- **Timezone Accurate**: Uses Python's standard `zoneinfo` (`Asia/Kuala_Lumpur`) to ensure posts trigger at midnight Malaysia time.
-- **Direct GitHub Image Hosting**: Meta Threads fetches images directly from public GitHub raw URLs (`https://raw.githubusercontent.com/WelsonLiong/spmcountdown/main/images/{N}.png`), requiring zero external image hosting costs.
-- **Platform Toggles**: Features `ENABLE_THREADS` and `ENABLE_TWITTER` configuration flags to easily activate or pause platforms.
-- **GitHub Actions Automation**: Supports `workflow_dispatch` triggers for external cron services (such as `cron-job.org`) or manual execution.
-- **Dry-Run & Date Simulation**: Test calculations and previews locally with `--dry-run` and `--date YYYY-MM-DD` flags.
+Automated daily countdown bot for the Sijil Pelajaran Malaysia (SPM) examinations. Every day at 00:00 (Malaysia Time / UTC+8), this bot posts the countdown image along with the target captions to Threads and Twitter (X).
 
 ---
 
@@ -21,7 +11,7 @@ Automated daily countdown bot for the **Sijil Pelajaran Malaysia (SPM)** examina
 │   └── workflows/
 │       └── spm_countdown.yml    # GitHub Actions workflow
 ├── images/
-│   ├── 96.png                   # Countdown images (N down to 0)
+│   ├── 100.png                   # Countdown images (100 down to 0)
 │   └── ...
 ├── .env.example                 # Environment variables template
 ├── .gitignore                   # Git exclusion rules
@@ -63,19 +53,28 @@ TWITTER_ACCESS_TOKEN=your_twitter_access_token_here
 TWITTER_ACCESS_TOKEN_SECRET=your_twitter_access_token_secret_here
 ```
 
-### 3. GitHub Repository Secrets
+### 3. Adjusting the Target Exam Date
+
+The exam date can be configured by adding `TARGET_DATE` to your `.env` file (format: `YYYY-MM-DD`) or by modifying `TARGET_DATE` in `post_countdown.py`:
+
+```ini
+TARGET_DATE=2026-11-23
+```
+
+### 4. GitHub Repository Secrets
 
 Under your GitHub repository **Settings** > **Secrets and variables** > **Actions**, add:
 
 - `THREADS_ACCESS_TOKEN` (Long-Lived Meta Threads Access Token)
 - `THREADS_USER_ID` (Default: `me`)
 - `TWITTER_API_KEY`, `TWITTER_API_SECRET`, `TWITTER_ACCESS_TOKEN`, `TWITTER_ACCESS_TOKEN_SECRET` (Optional if Twitter is enabled)
+- `TARGET_DATE` (Optional: specify `YYYY-MM-DD` if overriding the default in GitHub Actions)
 
 ---
 
 ## Automation via External Cron (00:00 Daily UTC+8)
 
-To trigger the GitHub Action every day at **00:00 UTC+8 (Malaysia Time)** using a free web cron service (e.g., [cron-job.org](https://cron-job.org/)):
+To trigger the GitHub Action every day at 00:00 UTC+8 (Malaysia Time) using a free web cron service (e.g., [cron-job.org](https://cron-job.org/)):
 
 1. Create a GitHub Personal Access Token (PAT) with `repo` / `workflow` permissions at [GitHub Settings > Personal Access Tokens](https://github.com/settings/tokens).
 2. Create a new cron job in [cron-job.org](https://cron-job.org/):
