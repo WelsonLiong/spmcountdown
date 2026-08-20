@@ -1,20 +1,6 @@
-# SPM 2026 Countdown Auto-Poster
+# SPM Countdown Auto-Poster
 
-Automated daily countdown bot for **SPM 2026** (Exam Date: **23 November 2026**). Every day at **00:00 (Malaysia Time / UTC+8)**, this bot posts the countdown image (`images/{N}.png`) along with the target captions to **Meta Threads** and **Twitter (X)**.
-
----
-
-## Countdown Schedule & Calculation
-
-The countdown calculates remaining days relative to **23 November 2026** in the `Asia/Kuala_Lumpur` (UTC+8) timezone.
-
-| Date (UTC+8) | Days Left | Image Asset | Threads Caption | Twitter Caption |
-| :--- | :--- | :--- | :--- | :--- |
-| **18/08/2026** | **97** | `images/97.png` | `97 days left until SPM 2026` | `97 days left until #SPM2026` |
-| **19/08/2026** | **96** | `images/96.png` | `96 days left until SPM 2026` | `96 days left until #SPM2026` |
-| **...** | ... | ... | ... | ... |
-| **22/11/2026** | **1** | `images/1.png` | `1 day left until SPM 2026` | `1 day left until #SPM2026` |
-| **23/11/2026** | **0** | `images/0.png` | `Today is the day! Good luck to all candidates for SPM 2026` | `Today is the day! Good luck to all candidates for #SPM2026` |
+Automated daily countdown bot for the **Sijil Pelajaran Malaysia (SPM)** examinations. Every day at **00:00 (Malaysia Time / UTC+8)**, this bot posts the countdown image (`images/{N}.png`) along with the target captions to **Meta Threads** and **Twitter (X)**.
 
 ---
 
@@ -35,7 +21,7 @@ The countdown calculates remaining days relative to **23 November 2026** in the 
 │   └── workflows/
 │       └── spm_countdown.yml    # GitHub Actions workflow
 ├── images/
-│   ├── 96.png                   # Countdown images (96 down to 0)
+│   ├── 96.png                   # Countdown images (N down to 0)
 │   └── ...
 ├── .env.example                 # Environment variables template
 ├── .gitignore                   # Git exclusion rules
