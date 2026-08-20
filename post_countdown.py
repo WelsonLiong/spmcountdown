@@ -15,7 +15,7 @@ from requests_oauthlib import OAuth1
 
 load_dotenv()
 
-TARGET_DATE = date.fromisoformat(os.getenv("TARGET_DATE", "2026-11-23"))
+TARGET_DATE = date(2026, 11, 23)
 TIMEZONE = ZoneInfo("Asia/Kuala_Lumpur")
 ENABLE_TWITTER = os.getenv("ENABLE_TWITTER", "false").lower() in ("true", "1", "yes")
 ENABLE_THREADS = os.getenv("ENABLE_THREADS", "true").lower() in ("true", "1", "yes")

@@ -55,10 +55,10 @@ TWITTER_ACCESS_TOKEN_SECRET=your_twitter_access_token_secret_here
 
 ### 3. Adjusting the Target Exam Date
 
-The exam date can be configured by adding `TARGET_DATE` to your `.env` file (format: `YYYY-MM-DD`) or by modifying `TARGET_DATE` in `post_countdown.py`:
+To set or update the target exam date, modify `TARGET_DATE` directly in `post_countdown.py`:
 
-```ini
-TARGET_DATE=2026-11-23
+```python
+TARGET_DATE = date(2026, 11, 23)
 ```
 
 ### 4. GitHub Repository Secrets
@@ -68,7 +68,6 @@ Under your GitHub repository **Settings** > **Secrets and variables** > **Action
 - `THREADS_ACCESS_TOKEN` (Long-Lived Meta Threads Access Token)
 - `THREADS_USER_ID` (Default: `me`)
 - `TWITTER_API_KEY`, `TWITTER_API_SECRET`, `TWITTER_ACCESS_TOKEN`, `TWITTER_ACCESS_TOKEN_SECRET` (Optional if Twitter is enabled)
-- `TARGET_DATE` (Optional: specify `YYYY-MM-DD` if overriding the default in GitHub Actions)
 
 ---
 
