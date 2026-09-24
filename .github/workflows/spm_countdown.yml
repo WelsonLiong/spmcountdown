@@ -63,12 +63,17 @@ jobs:
           $CMD
 
       - name: Persist Refreshed THREADS_ACCESS_TOKEN Secret
-        if: steps.countdown.outputs.refreshed_threads_token != '' && secrets.GH_PAT != ''
+        if: steps.countdown.outputs.refreshed_threads_token != ''
         env:
           GH_TOKEN: ${{ secrets.GH_PAT }}
           NEW_TOKEN: ${{ steps.countdown.outputs.refreshed_threads_token }}
           REPO: ${{ github.repository }}
         run: |
+          if [ -z "$GH_TOKEN" ]; then
+            echo "GH_PAT is not configured; skipping automatic secret persistence."
+            exit 0
+          fi
           echo "Persisting refreshed THREADS_ACCESS_TOKEN to GitHub repository secrets..."
           gh secret set THREADS_ACCESS_TOKEN --body "$NEW_TOKEN" --repo "$REPO"
           echo "Successfully updated THREADS_ACCESS_TOKEN secret for repository $REPO."
+
