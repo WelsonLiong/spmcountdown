@@ -13,6 +13,11 @@ on:
         required: false
         default: ''
         type: string
+      refresh_token:
+        description: 'Force refresh Threads access token'
+        required: false
+        default: false
+        type: boolean
 
 jobs:
   post-countdown:
@@ -34,6 +39,7 @@ jobs:
           pip install -r requirements.txt
 
       - name: Run SPM Countdown Post
+        id: countdown
         env:
           TWITTER_API_KEY: ${{ secrets.TWITTER_API_KEY }}
           TWITTER_API_SECRET: ${{ secrets.TWITTER_API_SECRET }}
@@ -48,7 +54,21 @@ jobs:
           if [ "${{ inputs.dry_run }}" = "true" ]; then
             CMD="$CMD --dry-run"
           fi
+          if [ "${{ inputs.refresh_token }}" = "true" ]; then
+            CMD="$CMD --refresh-token"
+          fi
           if [ -n "${{ inputs.override_date }}" ]; then
             CMD="$CMD --date ${{ inputs.override_date }}"
           fi
           $CMD
+
+      - name: Persist Refreshed THREADS_ACCESS_TOKEN Secret
+        if: steps.countdown.outputs.refreshed_threads_token != '' && secrets.GH_PAT != ''
+        env:
+          GH_TOKEN: ${{ secrets.GH_PAT }}
+          NEW_TOKEN: ${{ steps.countdown.outputs.refreshed_threads_token }}
+          REPO: ${{ github.repository }}
+        run: |
+          echo "Persisting refreshed THREADS_ACCESS_TOKEN to GitHub repository secrets..."
+          gh secret set THREADS_ACCESS_TOKEN --body "$NEW_TOKEN" --repo "$REPO"
+          echo "Successfully updated THREADS_ACCESS_TOKEN secret for repository $REPO."

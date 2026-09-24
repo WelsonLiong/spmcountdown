@@ -1,13 +1,40 @@
 from datetime import date
 from pathlib import Path
 import unittest
+from unittest.mock import MagicMock, patch
 
-from post_countdown import TARGET_DATE, get_captions, get_days_remaining, get_image_path
+import requests
+
+from post_countdown import (
+    TARGET_DATE,
+    get_captions,
+    get_days_remaining,
+    get_image_path,
+    refresh_threads_token,
+)
 
 
 class TestSPMCountdown(unittest.TestCase):
     def test_target_date(self):
         self.assertEqual(TARGET_DATE, date(2026, 11, 23))
+
+    def test_countdown_100_days(self):
+        aug_15 = date(2026, 8, 15)
+        self.assertEqual(get_days_remaining(aug_15), 100)
+        tw, th = get_captions(100)
+        self.assertEqual(tw, "100 days left until #SPM2026")
+        self.assertEqual(th, "100 days left until SPM 2026")
+
+    def test_countdown_over_100_days(self):
+        aug_14 = date(2026, 8, 14)
+        self.assertEqual(get_days_remaining(aug_14), 101)
+
+    def test_countdown_50_days_refresh_target(self):
+        oct_4 = date(2026, 10, 4)
+        self.assertEqual(get_days_remaining(oct_4), 50)
+        tw, th = get_captions(50)
+        self.assertEqual(tw, "50 days left until #SPM2026")
+        self.assertEqual(th, "50 days left until SPM 2026")
 
     def test_countdown_today(self):
         aug_18 = date(2026, 8, 18)
@@ -15,13 +42,6 @@ class TestSPMCountdown(unittest.TestCase):
         tw, th = get_captions(97)
         self.assertEqual(tw, "97 days left until #SPM2026")
         self.assertEqual(th, "97 days left until SPM 2026")
-
-    def test_countdown_96_days(self):
-        aug_19 = date(2026, 8, 19)
-        self.assertEqual(get_days_remaining(aug_19), 96)
-        tw, th = get_captions(96)
-        self.assertEqual(tw, "96 days left until #SPM2026")
-        self.assertEqual(th, "96 days left until SPM 2026")
 
     def test_countdown_one_day_remaining(self):
         nov_22 = date(2026, 11, 22)
@@ -44,6 +64,39 @@ class TestSPMCountdown(unittest.TestCase):
         self.assertTrue(img_96.exists(), f"Image 96.png not found at {img_96}")
         self.assertEqual(img_96.name, "96.png")
 
+    @patch("post_countdown.requests.get")
+    def test_refresh_threads_token_success(self, mock_get):
+        mock_resp = MagicMock()
+        mock_resp.ok = True
+        mock_resp.json.return_value = {
+            "access_token": "TH_REFRESHED_MOCK_TOKEN",
+            "token_type": "bearer",
+            "expires_in": 5184000,
+        }
+        mock_get.return_value = mock_resp
+
+        result = refresh_threads_token("OLD_TOKEN")
+        mock_get.assert_called_once_with(
+            "https://graph.threads.com/refresh_access_token",
+            params={"grant_type": "th_refresh_token", "access_token": "OLD_TOKEN"},
+            timeout=30,
+        )
+        self.assertEqual(result.get("access_token"), "TH_REFRESHED_MOCK_TOKEN")
+        self.assertEqual(result.get("expires_in"), 5184000)
+
+    @patch("post_countdown.requests.get")
+    def test_refresh_threads_token_failure(self, mock_get):
+        mock_resp = MagicMock()
+        mock_resp.ok = False
+        mock_resp.status_code = 400
+        mock_resp.text = "OAuthException: Token expired"
+        mock_resp.raise_for_status.side_effect = requests.exceptions.HTTPError("400 Client Error")
+        mock_get.return_value = mock_resp
+
+        with self.assertRaises(requests.exceptions.HTTPError):
+            refresh_threads_token("EXPIRED_TOKEN")
+
 
 if __name__ == "__main__":
     unittest.main()
+

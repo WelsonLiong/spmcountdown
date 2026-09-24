@@ -67,7 +67,19 @@ Under your GitHub repository **Settings** > **Secrets and variables** > **Action
 
 - `THREADS_ACCESS_TOKEN` (Long-Lived Meta Threads Access Token)
 - `THREADS_USER_ID` (Default: `me`)
+- `GH_PAT` (GitHub Personal Access Token with `repo` scope — allows GitHub Actions to automatically update `THREADS_ACCESS_TOKEN` when refreshed on Day 50)
 - `TWITTER_API_KEY`, `TWITTER_API_SECRET`, `TWITTER_ACCESS_TOKEN`, `TWITTER_ACCESS_TOKEN_SECRET` (Optional if Twitter is enabled)
+
+---
+
+## Countdown Window & Token Auto-Refresh
+
+- **Countdown Window**: Active between 100 days remaining and 0 days remaining. If triggered earlier than 100 days, it safely exits without errors.
+- **Automated Token Refresh (Day 50)**:
+  - Meta Threads long-lived access tokens expire after 60 days.
+  - When the countdown reaches 50 days remaining, the script calls Meta's official token refresh endpoint (`GET https://graph.threads.com/refresh_access_token?grant_type=th_refresh_token&access_token=...`).
+  - This renews the token for another 60 days, covering the remaining 50 days to Day 0.
+  - If `GH_PAT` is configured in repository secrets, GitHub Actions automatically writes the renewed token back into `secrets.THREADS_ACCESS_TOKEN` using `gh secret set`.
 
 ---
 

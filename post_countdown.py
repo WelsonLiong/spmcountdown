@@ -51,6 +51,49 @@ def get_public_image_url(days_left: int) -> str:
     return f"https://raw.githubusercontent.com/{github_repo}/{github_branch}/images/{days_left}.png"
 
 
+def refresh_threads_token(current_token: str) -> dict:
+    print("\n--- [Meta Threads Token Refresh] ---")
+    url = "https://graph.threads.com/refresh_access_token"
+    params = {
+        "grant_type": "th_refresh_token",
+        "access_token": current_token,
+    }
+    resp = requests.get(url, params=params, timeout=30)
+    if not resp.ok:
+        print(f"Token refresh failed: {resp.status_code} - {resp.text}", file=sys.stderr)
+        resp.raise_for_status()
+
+    data = resp.json()
+    new_token = data.get("access_token")
+    expires_in = data.get("expires_in")
+    print(f"Token refreshed successfully! Expires in: {expires_in} seconds.")
+
+    if new_token:
+        print(f"::add-mask::{new_token}")
+
+    return data
+
+
+def update_local_env(env_file: Path, new_token: str) -> None:
+    try:
+        content = env_file.read_text(encoding="utf-8")
+        lines = content.splitlines()
+        updated = False
+        new_lines = []
+        for line in lines:
+            if line.startswith("THREADS_ACCESS_TOKEN="):
+                new_lines.append(f"THREADS_ACCESS_TOKEN={new_token}")
+                updated = True
+            else:
+                new_lines.append(line)
+        if not updated:
+            new_lines.append(f"THREADS_ACCESS_TOKEN={new_token}")
+        env_file.write_text("\n".join(new_lines) + "\n", encoding="utf-8")
+        print("Updated THREADS_ACCESS_TOKEN in local .env file.")
+    except Exception as e:
+        print(f"Note: Could not update local .env file: {e}")
+
+
 def post_to_twitter(image_path: Path, caption: str, dry_run: bool = False) -> Optional[str]:
     print("\n--- [Twitter / X] ---")
     print(f"Caption: {caption}")
@@ -175,6 +218,7 @@ def main() -> int:
     parser = argparse.ArgumentParser(description="SPM 2026 Countdown Auto-Poster")
     parser.add_argument("--dry-run", action="store_true", help="Simulate execution without posting")
     parser.add_argument("--date", type=str, help="Simulate a specific date (YYYY-MM-DD)")
+    parser.add_argument("--refresh-token", action="store_true", help="Force refresh Threads access token")
     parser.add_argument("--skip-twitter", action="store_true", help="Skip posting to Twitter")
     parser.add_argument("--skip-threads", action="store_true", help="Skip posting to Threads")
     args = parser.parse_args()
@@ -189,13 +233,38 @@ def main() -> int:
     print(f"SPM 2026 Date: {TARGET_DATE}")
     print(f"Days Remaining: {days_left}")
 
+    if days_left > 100:
+        print(f"Countdown has not started yet ({days_left} days remaining > 100). Exiting gracefully.")
+        return 0
+
     if days_left < 0:
         print(f"SPM 2026 has already passed on {current_date}.")
         return 0
 
     base_dir = Path(__file__).resolve().parent
-    image_path = get_image_path(days_left, base_dir)
 
+    if days_left == 50 or args.refresh_token:
+        print(f"\n[Trigger] Day {days_left} reached or --refresh-token requested.")
+        current_token = os.getenv("THREADS_ACCESS_TOKEN")
+        if not current_token:
+            print("Warning: THREADS_ACCESS_TOKEN not found in environment; skipping token refresh.", file=sys.stderr)
+        elif args.dry_run:
+            print("[DRY-RUN] Threads token refresh call simulated.")
+        else:
+            try:
+                refresh_data = refresh_threads_token(current_token)
+                new_token = refresh_data.get("access_token")
+                if new_token:
+                    os.environ["THREADS_ACCESS_TOKEN"] = new_token
+                    update_local_env(base_dir / ".env", new_token)
+                    github_output = os.getenv("GITHUB_OUTPUT")
+                    if github_output:
+                        with open(github_output, "a", encoding="utf-8") as out:
+                            out.write(f"refreshed_threads_token={new_token}\n")
+            except Exception as exc:
+                print(f"Warning: Failed to refresh Threads token: {exc}", file=sys.stderr)
+
+    image_path = get_image_path(days_left, base_dir)
     if not image_path.exists():
         print(f"Error: Countdown image not found at {image_path}", file=sys.stderr)
         return 1
