@@ -25,10 +25,10 @@ jobs:
 
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v7
         with:
           python-version: '3.11'
           cache: 'pip'
@@ -74,6 +74,6 @@ jobs:
             exit 0
           fi
           echo "Persisting refreshed THREADS_ACCESS_TOKEN to GitHub repository secrets..."
-          gh secret set THREADS_ACCESS_TOKEN --body "$NEW_TOKEN" --repo "$REPO"
+          printf "%s" "$NEW_TOKEN" | gh secret set THREADS_ACCESS_TOKEN --repo "$REPO"
           echo "Successfully updated THREADS_ACCESS_TOKEN secret for repository $REPO."
 
